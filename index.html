@@ -2,6 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <title>Claude Prompt Builder</title>
 <style>
   * { box-sizing: border-box; }
@@ -133,6 +135,51 @@
     font-family: -apple-system, monospace;
     font-size: 10px;
     color: #ccc;
+  }
+
+  /* Mobile: bigger touch targets, 16px inputs to suppress iOS zoom-on-focus,
+     drop the keyboard hint, give Add/Clear-files more room. */
+  @media (max-width: 600px) {
+    body {
+      padding: max(14px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
+    }
+    h1 { font-size: 13px; }
+    label.field-label { font-size: 12px; }
+    textarea {
+      font-size: 16px;
+      padding: 10px 12px;
+      line-height: 1.45;
+    }
+    .small textarea { min-height: 52px; }
+    .medium textarea { min-height: 78px; }
+    .large textarea { min-height: 110px; }
+    .file-row {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .file-row button {
+      padding: 10px 14px;
+      font-size: 14px;
+      min-height: 40px;
+      flex: 1 1 auto;
+    }
+    .file-status {
+      font-size: 13px;
+      flex: 1 0 100%;
+      order: 99;
+    }
+    .row {
+      gap: 10px;
+      margin-top: 18px;
+    }
+    button.action {
+      padding: 12px 18px;
+      font-size: 15px;
+      min-height: 46px;
+      flex: 1 1 auto;
+    }
+    .hint { display: none; }
+    .spacer { display: none; }
   }
 </style>
 </head>
