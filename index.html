@@ -149,7 +149,7 @@
 <div class="field large">
   <label class="field-label" for="background">Background</label>
   <textarea id="background" rows="4"
-    placeholder="Context, prior decisions, relevant files. Files attached below will be appended automatically. Don't repeat what's in your memory."></textarea>
+    placeholder="Context Claude needs to do the task well: prior decisions, what's been tried, relevant files. Files attached below will be appended automatically."></textarea>
   <div class="file-row">
     <button type="button" onclick="document.getElementById('filePicker').click()">+ Add files</button>
     <button type="button" onclick="clearFiles()" id="clearFilesBtn" style="display:none">Clear files</button>
@@ -167,7 +167,7 @@
 <div class="field medium">
   <label class="field-label" for="rules">Rules / Constraints</label>
   <textarea id="rules" rows="3"
-    placeholder="Ad-hoc rules for this prompt only. Standing directives (SEARCH-FIRST, BUYER-FIRST, DEPTH-FIRST, OPTIONS-FIRST, VERIFY-PROCEDURES, DO-THE-WORK) apply automatically from memory — invoke explicitly here only to emphasize."></textarea>
+    placeholder="Things Claude should or shouldn't do, e.g., 'don't speculate', 'cite sources', 'ask before making changes', 'keep responses under 200 words'."></textarea>
 </div>
 
 <div class="field small">
