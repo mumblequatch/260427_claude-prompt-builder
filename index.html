@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Claude Prompt Builder</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    font-size: 13px;
+    margin: 0;
+    padding: 14px 16px;
+    background: #1e1e1e;
+    color: #e8e8e8;
+    width: 760px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 12px;
+    margin: 0;
+    color: #8ab4f8;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .field {
+    margin-bottom: 9px;
+  }
+  label.field-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 3px;
+    color: #c8c8c8;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  textarea {
+    width: 100%;
+    background: #2a2a2a;
+    color: #e8e8e8;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 7px 9px;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 13px;
+    resize: vertical;
+    line-height: 1.4;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: #8ab4f8;
+    background: #2d2d2d;
+  }
+  textarea::placeholder {
+    color: #6a6a6a;
+    font-style: italic;
+  }
+  .small textarea { min-height: 36px; }
+  .medium textarea { min-height: 54px; }
+  .large textarea { min-height: 76px; }
+  .file-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    align-items: center;
+  }
+  .file-row button {
+    background: #2a2a2a;
+    color: #aaa;
+    border: 1px solid #3a3a3a;
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .file-row button:hover {
+    background: #353535;
+    color: #e8e8e8;
+  }
+  .file-status {
+    font-size: 11px;
+    color: #888;
+    flex: 1;
+  }
+  input[type="file"] { display: none; }
+  .row {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    align-items: center;
+  }
+  button.action {
+    background: #2a2a2a;
+    color: #e8e8e8;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  button.action:hover {
+    background: #353535;
+    border-color: #4a4a4a;
+  }
+  button.primary {
+    background: #1a73e8;
+    border-color: #1a73e8;
+    color: white;
+    font-weight: 600;
+  }
+  button.primary:hover {
+    background: #1765cc;
+    border-color: #1765cc;
+  }
+  .spacer { flex: 1; }
+  .hint {
+    font-size: 11px;
+    color: #888;
+  }
+  kbd {
+    background: #3a3a3a;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: -apple-system, monospace;
+    font-size: 10px;
+    color: #ccc;
+  }
+</style>
+</head>
+<body data-kmwindow="792,700">
+
+<div class="header">
+  <h1>Claude Prompt Builder</h1>
+</div>
+
+<div class="field small">
+  <label class="field-label" for="role">Context</label>
+  <textarea id="role" rows="2"
+    placeholder="e.g., 'You are helping me think through X' or 'Act as a skeptical reviewer'. Optional — Claude infers from task if blank."></textarea>
+</div>
+
+<div class="field large">
+  <label class="field-label" for="background">Background</label>
+  <textarea id="background" rows="4"
+    placeholder="Context, prior decisions, relevant files. Files attached below will be appended automatically. Don't repeat what's in your memory."></textarea>
+  <div class="file-row">
+    <button type="button" onclick="document.getElementById('filePicker').click()">+ Add files</button>
+    <button type="button" onclick="clearFiles()" id="clearFilesBtn" style="display:none">Clear files</button>
+    <span class="file-status" id="fileStatus">No files attached</span>
+    <input type="file" id="filePicker" multiple onchange="handleFiles(event)">
+  </div>
+</div>
+
+<div class="field medium">
+  <label class="field-label" for="task">Specific Task</label>
+  <textarea id="task" rows="3"
+    placeholder="What you want done, in one or two sentences. The 'verb' of the prompt."></textarea>
+</div>
+
+<div class="field medium">
+  <label class="field-label" for="rules">Rules / Constraints</label>
+  <textarea id="rules" rows="3"
+    placeholder="Ad-hoc rules for this prompt only. Standing directives (SEARCH-FIRST, BUYER-FIRST, DEPTH-FIRST, OPTIONS-FIRST, VERIFY-PROCEDURES, DO-THE-WORK) apply automatically from memory — invoke explicitly here only to emphasize."></textarea>
+</div>
+
+<div class="field small">
+  <label class="field-label" for="success">Success Criteria</label>
+  <textarea id="success" rows="2"
+    placeholder="How will I know this is right? e.g., 'A ranked list with reasoning', 'Working code I can paste into Reaper', 'A go/no-go recommendation'."></textarea>
+</div>
+
+<div class="field small">
+  <label class="field-label" for="format">Output Format</label>
+  <textarea id="format" rows="2"
+    placeholder="e.g., 'Markdown with code blocks', 'Bullet list under 200 words', 'Full file reoutput per directive', 'Bare triple backticks for fences'."></textarea>
+</div>
+
+<div class="row">
+  <button type="button" class="action" onclick="clearAll()">Clear</button>
+  <span class="spacer"></span>
+  <span class="hint"><kbd>⌘↵</kbd> assemble · <kbd>Esc</kbd> cancel</span>
+  <button type="button" class="action primary" onclick="assemble()">Assemble &amp; Copy</button>
+</div>
+
+<input type="hidden" name="PB_Assembled" id="pbAssembled">
+
+<script>
+// File handling
+let attachedFiles = []; // [{path, name, kind, contents}]
+
+const TEXT_EXTS = new Set([
+  'txt','md','mdx','markdown','rst','tex',
+  'py','js','jsx','ts','tsx','sh','bash','zsh','rb','go','rs','c','cpp','h','hpp','swift','m','mm',
+  'lua','eel','rpp','rfxchain','jsfx','jsfx-inc',
+  'applescript','scpt',
+  'html','htm','css','scss','sass','xml','svg','vue',
+  'json','yaml','yml','toml','ini','conf','cfg','env','plist',
+  'srt','vtt','ass',
+  'tw','twee',
+  'csv','tsv','log',
+  'sql','graphql'
+]);
+
+const DOCX_EXTS = new Set(['docx','doc','rtf','rtfd','odt']);
+const PDF_EXTS = new Set(['pdf']);
+const BINARY_EXTS = new Set([
+  'wav','aif','aiff','mp3','m4a','flac','ogg','opus',
+  'mp4','mov','mkv','avi','webm',
+  'png','jpg','jpeg','gif','heic','webp','tiff','bmp',
+  'pptx','xlsx','key','pages','numbers',
+  'zip','tar','gz','dmg','7z','rar'
+]);
+
+function getExt(name) {
+  const i = name.lastIndexOf('.');
+  return i >= 0 ? name.slice(i+1).toLowerCase() : '';
+}
+
+function classify(name) {
+  const ext = getExt(name);
+  if (TEXT_EXTS.has(ext)) return 'text';
+  if (DOCX_EXTS.has(ext)) return 'docx-like';
+  if (PDF_EXTS.has(ext)) return 'pdf';
+  if (BINARY_EXTS.has(ext)) return 'binary';
+  return 'unknown';
+}
+
+function handleFiles(event) {
+  const files = Array.from(event.target.files);
+  for (const f of files) {
+    // WebKit gives us the path via webkitRelativePath sometimes, but for file input
+    // the secure path may be in f.path (Electron) or absent (pure web).
+    // KM's WebKit context typically exposes the file but not always the path.
+    // We'll capture name + size + classification; path resolution happens at assembly.
+    const kind = classify(f.name);
+    attachedFiles.push({
+      name: f.name,
+      size: f.size,
+      kind: kind,
+      // path will be filled in by KM-side helper if needed; for now we hold the File object
+      _file: f
+    });
+  }
+  updateFileStatus();
+  event.target.value = ''; // allow re-picking same file
+}
+
+function clearFiles() {
+  attachedFiles = [];
+  updateFileStatus();
+}
+
+function updateFileStatus() {
+  const status = document.getElementById('fileStatus');
+  const clearBtn = document.getElementById('clearFilesBtn');
+  if (attachedFiles.length === 0) {
+    status.textContent = 'No files attached';
+    clearBtn.style.display = 'none';
+  } else {
+    const summary = attachedFiles.map(f => f.name).join(', ');
+    status.textContent = `${attachedFiles.length} file(s): ${summary}`;
+    clearBtn.style.display = '';
+  }
+}
+
+// Read text file contents (browser File API)
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = e => reject(e);
+    reader.readAsText(file);
+  });
+}
+
+// Format file block based on kind
+async function formatFileBlock(f) {
+  const TEXT_LIMIT = 100 * 1024; // 100KB
+
+  if (f.kind === 'text') {
+    if (f.size <= TEXT_LIMIT) {
+      try {
+        const contents = await readTextFile(f._file);
+        return `<file name="${f.name}">\n\`\`\`\n${contents}\n\`\`\`\n</file>`;
+      } catch (e) {
+        return `<file name="${f.name}" note="failed to read: ${e.message}" />`;
+      }
+    } else {
+      // Large text: include first 50 lines + note
+      try {
+        const contents = await readTextFile(f._file);
+        const lines = contents.split('\n');
+        const sample = lines.slice(0, 50).join('\n');
+        return `<file name="${f.name}" size="${(f.size/1024).toFixed(1)}KB" note="large file, first 50 lines shown">\n\`\`\`\n${sample}\n... [truncated, ${lines.length - 50} more lines]\n\`\`\`\n</file>`;
+      } catch (e) {
+        return `<file name="${f.name}" note="failed to read: ${e.message}" />`;
+      }
+    }
+  }
+
+  if (f.kind === 'docx-like') {
+    return `<file name="${f.name}" note="Word/RTF document — extract via 'textutil -convert txt -stdout' if needed, or attach via paperclip." />`;
+  }
+
+  if (f.kind === 'pdf') {
+    return `<file name="${f.name}" note="PDF — attach via paperclip if Claude.ai, or reference path if Claude Code." />`;
+  }
+
+  if (f.kind === 'binary') {
+    return `<file name="${f.name}" note="Binary file — attach via paperclip if Claude.ai, or reference path if Claude Code." />`;
+  }
+
+  // unknown
+  return `<file name="${f.name}" note="Unknown format — attach via paperclip if Claude.ai, or reference path if Claude Code." />`;
+}
+
+// Assemble the prompt
+async function assemble() {
+  const role = document.getElementById('role').value.trim();
+  const background = document.getElementById('background').value.trim();
+  const task = document.getElementById('task').value.trim();
+  const rules = document.getElementById('rules').value.trim();
+  const success = document.getElementById('success').value.trim();
+  const format = document.getElementById('format').value.trim();
+
+  // Build file blocks
+  let fileBlocks = '';
+  if (attachedFiles.length > 0) {
+    const blocks = await Promise.all(attachedFiles.map(f => formatFileBlock(f)));
+    fileBlocks = blocks.join('\n');
+  }
+
+  // Assemble sections (only include non-empty ones)
+  const sections = [];
+
+  if (role) sections.push(`<context>\n${role}\n</context>`);
+
+  if (background || fileBlocks) {
+    let bgContent = background;
+    if (fileBlocks) {
+      bgContent = bgContent ? `${bgContent}\n\n${fileBlocks}` : fileBlocks;
+    }
+    sections.push(`<background>\n${bgContent}\n</background>`);
+  }
+
+  if (rules) sections.push(`<rules>\n${rules}\n</rules>`);
+
+  if (task) sections.push(`<task>\n${task}\n</task>`);
+
+  if (success) sections.push(`<success_criteria>\n${success}\n</success_criteria>`);
+
+  if (format) sections.push(`<output_format>\n${format}\n</output_format>`);
+
+  const assembled = sections.join('\n\n');
+
+  const finish = (ok) => {
+    if (window.KeyboardMaestro) {
+      window.KeyboardMaestro.Submit('OK');
+    } else {
+      flashStatus(ok ? 'Copied ✓' : 'Copy blocked by browser — try Safari');
+    }
+  };
+
+  const el = document.getElementById('pbAssembled');
+  if (el) {
+    el.value = assembled;
+    el.defaultValue = assembled;
+    el.setAttribute('value', assembled);
+  }
+
+  navigator.clipboard.writeText(assembled).then(() => finish(true)).catch(() => finish(false));
+}
+
+function clearAll() {
+  document.getElementById('role').value = '';
+  document.getElementById('background').value = '';
+  document.getElementById('task').value = '';
+  document.getElementById('rules').value = '';
+  document.getElementById('success').value = '';
+  document.getElementById('format').value = '';
+  clearFiles();
+  // Visual feedback
+  flashStatus('Cleared');
+}
+
+function flashStatus(msg) {
+  const status = document.getElementById('fileStatus');
+  status.textContent = msg;
+  status.style.color = '#8ab4f8';
+  setTimeout(() => {
+    status.style.color = '#888';
+    updateFileStatus();
+  }, 1500);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (window.KeyboardMaestro) {
+      window.KeyboardMaestro.Cancel('Cancel');
+    }
+  } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    assemble();
+  }
+});
+
+// KM lifecycle hooks
+function KMInit() {
+  // Auto-load draft if KM passes a flag (optional)
+  // Otherwise leave fields blank
+}
+
+function KMWillShowWindow() {
+  // Focus the task field by default — that's the most-edited field
+  setTimeout(() => document.getElementById('role').focus(), 50);
+}
+
+// Browser load (no-op when running inside KM, which uses KMWillShowWindow above)
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.KeyboardMaestro) {
+    setTimeout(() => document.getElementById('role').focus(), 50);
+  }
+});
+</script>
+
+</body>
+</html>
