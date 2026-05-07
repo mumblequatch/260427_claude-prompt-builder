@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="light dark">
 <title>Claude Prompt Builder</title>
 <style>
   * { box-sizing: border-box; }
@@ -142,6 +142,59 @@
     font-family: -apple-system, monospace;
     font-size: 10px;
     color: #ccc;
+  }
+
+  /* Light mode: invert the surfaces and text. Accent blue stays. */
+  @media (prefers-color-scheme: light) {
+    html { background: #ffffff; }
+    body { background: #ffffff; color: #1a1a1a; }
+    h1 { color: #1a73e8; }
+    label.field-label { color: #444; }
+    textarea {
+      background: #f5f5f5;
+      color: #1a1a1a;
+      border-color: #d8d8d8;
+    }
+    textarea:focus {
+      border-color: #1a73e8;
+      background: #ffffff;
+    }
+    textarea::placeholder { color: #999; }
+    .file-row button {
+      background: #f5f5f5;
+      color: #555;
+      border-color: #d8d8d8;
+    }
+    .file-row button:hover {
+      background: #ececec;
+      color: #1a1a1a;
+    }
+    .file-status { color: #666; }
+    .attach-hint { color: #666; }
+    .attach-hint strong { color: #333; }
+    button.action {
+      background: #f5f5f5;
+      color: #1a1a1a;
+      border-color: #d8d8d8;
+    }
+    button.action:hover {
+      background: #ececec;
+      border-color: #c0c0c0;
+    }
+    button.primary {
+      background: #1a73e8;
+      border-color: #1a73e8;
+      color: white;
+    }
+    button.primary:hover {
+      background: #1765cc;
+      border-color: #1765cc;
+    }
+    .hint { color: #666; }
+    kbd {
+      background: #ececec;
+      color: #444;
+    }
   }
 
   /* Mobile: bigger touch targets, 16px inputs to suppress iOS zoom-on-focus,
