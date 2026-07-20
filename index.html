@@ -535,11 +535,11 @@ function KMWillShowWindow() {
   // Focus the task field by default — that's the most-edited field
   setTimeout(() => document.getElementById('role').focus(), 50);
   populateHistorySelect();
-  relayout();
+  autosizeTextareas();
+  setTimeout(startWindowTracking, 150); // fallback in case 'load' already fired
 }
 
-// Grow each textarea to fit its content. The window itself is a fixed size
-// (data-kmwindow) chosen to fit the whole form without a scrollbar.
+// Grow each textarea to fit its content.
 function autosizeTextareas() {
   document.querySelectorAll('textarea').forEach(t => {
     t.style.height = 'auto';
@@ -547,14 +547,57 @@ function autosizeTextareas() {
   });
 }
 
-function relayout() { autosizeTextareas(); }
+// --- Window sizing. Resize the KM prompt to fit its content and FOLLOW a manual
+// textarea drag-resize. window.KeyboardMaestro.ResizeWindow is the only method KM
+// honors. Guarded so it can never collapse the window: no-op until layout is ready
+// (content >= 150px) and the height is floored.
+const WIN_W = 792;
+const WIN_CHROME = 28; // window frame is taller than the web content (title bar)
+let _fitTimer = null;
+let _tracking = false;
+
+function fitWindow() {
+  if (!window.KeyboardMaestro || typeof window.KeyboardMaestro.ResizeWindow !== 'function') return;
+  const content = Math.ceil(document.body.scrollHeight);
+  if (content < 150) return; // layout not ready — never shrink to nothing
+  const avail = ((window.screen && window.screen.availHeight) || 1000) - 40;
+  const h = Math.max(320, Math.min(content + WIN_CHROME, avail));
+  try {
+    const x = window.screenX, y = window.screenY;
+    if (Number.isFinite(x) && Number.isFinite(y) && x > 0 && y > 0) {
+      window.KeyboardMaestro.ResizeWindow(x + ',' + y + ',' + WIN_W + ',' + h);
+    } else {
+      window.KeyboardMaestro.ResizeWindow(WIN_W + ',' + h);
+    }
+  } catch (e) {}
+}
+
+function scheduleFit() {
+  if (_fitTimer) clearTimeout(_fitTimer);
+  _fitTimer = setTimeout(fitWindow, 30);
+}
+
+function relayout() { autosizeTextareas(); scheduleFit(); }
 
 document.querySelectorAll('textarea').forEach(t => t.addEventListener('input', relayout));
 
+function startWindowTracking() {
+  if (_tracking) { scheduleFit(); return; }
+  _tracking = true;
+  setTimeout(fitWindow, 60); // initial size-to-content, after layout settles
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => scheduleFit()); // catches manual drag-resize
+    ro.observe(document.body);
+  }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   populateHistorySelect();
-  relayout();
+  autosizeTextareas();
 });
+
+// Size the window only AFTER full layout.
+window.addEventListener('load', startWindowTracking);
 </script>
 
 </body>
