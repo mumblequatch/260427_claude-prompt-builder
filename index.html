@@ -549,12 +549,20 @@ function autosizeTextareas() {
 }
 
 function fitWindow() {
-  // KM ignores window.resizeTo in custom prompts; it resizes the window to match
-  // the body's data-kmwindow attribute, which it polls. So mutate that instead.
+  // KM resizes custom-prompt windows via window.KeyboardMaestro.ResizeWindow(),
+  // invoked from an event handler with a "width,height" (or "x,y,w,h") string.
+  // window.resizeTo and late data-kmwindow edits are both ignored by KM.
+  if (!window.KeyboardMaestro || typeof window.KeyboardMaestro.ResizeWindow !== 'function') return;
+  const avail = ((window.screen && window.screen.availHeight) || 1000) - 60;
+  const h = Math.min(Math.ceil(document.body.scrollHeight) + 6, avail);
+  const w = 792;
   try {
-    const avail = ((window.screen && window.screen.availHeight) || 1000) - 60;
-    const h = Math.min(Math.ceil(document.body.scrollHeight) + 6, avail);
-    document.body.setAttribute('data-kmwindow', '792,' + h);
+    // Pass current position so the window resizes in place instead of jumping.
+    if (typeof window.screenX === 'number' && typeof window.screenY === 'number') {
+      window.KeyboardMaestro.ResizeWindow(window.screenX + ',' + window.screenY + ',' + w + ',' + h);
+    } else {
+      window.KeyboardMaestro.ResizeWindow(w + ',' + h);
+    }
   } catch (e) {}
 }
 
@@ -577,6 +585,8 @@ window.addEventListener('DOMContentLoaded', () => {
   populateHistorySelect();
   relayout();
 });
+
+window.addEventListener('load', relayout);
 </script>
 
 </body>
