@@ -145,7 +145,7 @@
   select:focus { outline: none; border-color: #8ab4f8; }
 </style>
 </head>
-<body data-kmwindow="792,680">
+<body data-kmwindow="792,760">
 
 <div class="header">
   <h1>Claude Prompt Builder</h1>
@@ -538,55 +538,23 @@ function KMWillShowWindow() {
   relayout();
 }
 
-// Grow each textarea to fit its content, then size the window to fit everything
-// so there's no window scrollbar. CSS min-heights keep empty fields from collapsing.
+// Grow each textarea to fit its content. The window itself is a fixed size
+// (data-kmwindow) chosen to fit the whole form without a scrollbar.
 function autosizeTextareas() {
   document.querySelectorAll('textarea').forEach(t => {
     t.style.height = 'auto';
     t.style.height = (t.scrollHeight + 2) + 'px';
   });
-  fitWindow();
-}
-
-function fitWindow() {
-  // KM resizes custom-prompt windows via window.KeyboardMaestro.ResizeWindow(),
-  // invoked from an event handler with a "width,height" (or "x,y,w,h") string.
-  // window.resizeTo and late data-kmwindow edits are both ignored by KM.
-  if (!window.KeyboardMaestro || typeof window.KeyboardMaestro.ResizeWindow !== 'function') return;
-  const avail = ((window.screen && window.screen.availHeight) || 1000) - 60;
-  const h = Math.min(Math.ceil(document.body.scrollHeight) + 6, avail);
-  const w = 792;
-  try {
-    // Pass current position so the window resizes in place instead of jumping.
-    if (typeof window.screenX === 'number' && typeof window.screenY === 'number') {
-      window.KeyboardMaestro.ResizeWindow(window.screenX + ',' + window.screenY + ',' + w + ',' + h);
-    } else {
-      window.KeyboardMaestro.ResizeWindow(w + ',' + h);
-    }
-  } catch (e) {}
 }
 
 function relayout() { autosizeTextareas(); }
 
 document.querySelectorAll('textarea').forEach(t => t.addEventListener('input', relayout));
 
-// Re-fit the window whenever the body's size changes for any reason —
-// manual textarea drag-resize (no 'input' event), history field toggling, etc.
-if (typeof ResizeObserver !== 'undefined') {
-  let _rafFit = null;
-  const ro = new ResizeObserver(() => {
-    if (_rafFit) cancelAnimationFrame(_rafFit);
-    _rafFit = requestAnimationFrame(fitWindow);
-  });
-  ro.observe(document.body);
-}
-
 window.addEventListener('DOMContentLoaded', () => {
   populateHistorySelect();
   relayout();
 });
-
-window.addEventListener('load', relayout);
 </script>
 
 </body>
