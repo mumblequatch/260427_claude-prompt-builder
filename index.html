@@ -2,21 +2,17 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="light dark">
 <title>Claude Prompt Builder</title>
 <style>
   * { box-sizing: border-box; }
-  html { background: #1e1e1e; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     font-size: 13px;
-    margin: 0 auto;
+    margin: 0;
     padding: 14px 16px;
     background: #1e1e1e;
     color: #e8e8e8;
-    width: 100%;
-    max-width: 760px;
+    width: 760px;
   }
   .header {
     display: flex;
@@ -92,13 +88,6 @@
     color: #888;
     flex: 1;
   }
-  .attach-hint {
-    font-size: 11px;
-    color: #777;
-    margin-top: 6px;
-    line-height: 1.45;
-  }
-  .attach-hint strong { color: #aaa; font-weight: 600; }
   input[type="file"] { display: none; }
   .row {
     display: flex;
@@ -143,108 +132,20 @@
     font-size: 10px;
     color: #ccc;
   }
-
-  /* Light mode: invert the surfaces and text. Accent blue stays. */
-  @media (prefers-color-scheme: light) {
-    html { background: #ffffff; }
-    body { background: #ffffff; color: #1a1a1a; }
-    h1 { color: #1a73e8; }
-    label.field-label { color: #444; }
-    textarea {
-      background: #f5f5f5;
-      color: #1a1a1a;
-      border-color: #d8d8d8;
-    }
-    textarea:focus {
-      border-color: #1a73e8;
-      background: #ffffff;
-    }
-    textarea::placeholder { color: #999; }
-    .file-row button {
-      background: #f5f5f5;
-      color: #555;
-      border-color: #d8d8d8;
-    }
-    .file-row button:hover {
-      background: #ececec;
-      color: #1a1a1a;
-    }
-    .file-status { color: #666; }
-    .attach-hint { color: #666; }
-    .attach-hint strong { color: #333; }
-    button.action {
-      background: #f5f5f5;
-      color: #1a1a1a;
-      border-color: #d8d8d8;
-    }
-    button.action:hover {
-      background: #ececec;
-      border-color: #c0c0c0;
-    }
-    button.primary {
-      background: #1a73e8;
-      border-color: #1a73e8;
-      color: white;
-    }
-    button.primary:hover {
-      background: #1765cc;
-      border-color: #1765cc;
-    }
-    .hint { color: #666; }
-    kbd {
-      background: #ececec;
-      color: #444;
-    }
+  select {
+    width: 100%;
+    background: #2a2a2a;
+    color: #e8e8e8;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 6px 9px;
+    font-family: inherit;
+    font-size: 13px;
   }
-
-  /* Mobile: bigger touch targets, 16px inputs to suppress iOS zoom-on-focus,
-     drop the keyboard hint, give Add/Clear-files more room. */
-  @media (max-width: 600px) {
-    body {
-      padding: max(14px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
-    }
-    h1 { font-size: 13px; }
-    label.field-label { font-size: 12px; }
-    textarea {
-      font-size: 16px;
-      padding: 10px 12px;
-      line-height: 1.45;
-    }
-    .small textarea { min-height: 52px; }
-    .medium textarea { min-height: 78px; }
-    .large textarea { min-height: 110px; }
-    .file-row {
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .file-row button {
-      padding: 10px 14px;
-      font-size: 14px;
-      min-height: 40px;
-      flex: 1 1 auto;
-    }
-    .file-status {
-      font-size: 13px;
-      flex: 1 0 100%;
-      order: 99;
-    }
-    .attach-hint { font-size: 12px; }
-    .row {
-      gap: 10px;
-      margin-top: 18px;
-    }
-    button.action {
-      padding: 12px 18px;
-      font-size: 15px;
-      min-height: 46px;
-      flex: 1 1 auto;
-    }
-    .hint { display: none; }
-    .spacer { display: none; }
-  }
+  select:focus { outline: none; border-color: #8ab4f8; }
 </style>
 </head>
-<body data-kmwindow="792,700">
+<body data-kmwindow="792,680">
 
 <div class="header">
   <h1>Claude Prompt Builder</h1>
@@ -259,15 +160,12 @@
 <div class="field large">
   <label class="field-label" for="background">Background</label>
   <textarea id="background" rows="4"
-    placeholder="Context Claude needs to do the task well: prior decisions, what's been tried, relevant files."></textarea>
+    placeholder="Context, prior decisions, relevant files. Files attached below will be appended automatically. Don't repeat what's in your memory."></textarea>
   <div class="file-row">
     <button type="button" onclick="document.getElementById('filePicker').click()">+ Add files</button>
     <button type="button" onclick="clearFiles()" id="clearFilesBtn" style="display:none">Clear files</button>
     <span class="file-status" id="fileStatus">No files attached</span>
     <input type="file" id="filePicker" multiple onchange="handleFiles(event)">
-  </div>
-  <div class="attach-hint">
-    Text files (.md, .txt, code, .csv) inline into the prompt. For PDFs, images, Word docs, or audio: paste the prompt into Claude first, then use the <strong>paperclip</strong> (desktop) or <strong>+</strong> button (mobile) to attach the file there.
   </div>
 </div>
 
@@ -280,7 +178,7 @@
 <div class="field medium">
   <label class="field-label" for="rules">Rules / Constraints</label>
   <textarea id="rules" rows="3"
-    placeholder="Things Claude should or shouldn't do, e.g., 'don't speculate', 'cite sources', 'ask before making changes', 'keep responses under 200 words'."></textarea>
+    placeholder="Ad-hoc rules for this prompt only. Standing directives (SEARCH-FIRST, BUYER-FIRST, DEPTH-FIRST, OPTIONS-FIRST, VERIFY-PROCEDURES, DO-THE-WORK) apply automatically from memory — invoke explicitly here only to emphasize."></textarea>
 </div>
 
 <div class="field small">
@@ -295,10 +193,16 @@
     placeholder="e.g., 'Markdown with code blocks', 'Bullet list under 200 words', 'Full file reoutput per directive', 'Bare triple backticks for fences'."></textarea>
 </div>
 
+<div class="field small" id="historyField" style="display:none">
+  <label class="field-label" for="historySelect">History</label>
+  <select id="historySelect" onchange="recallSelected()"></select>
+</div>
+
 <div class="row">
   <button type="button" class="action" onclick="clearAll()">Clear</button>
+  <button type="button" class="action" onclick="recallLast()" title="Load the most recent prompt (click again to step further back)">Recall last</button>
   <span class="spacer"></span>
-  <span class="hint"><kbd>⌘↵</kbd> assemble · <kbd>Esc</kbd> cancel</span>
+  <span class="hint"><kbd>⌘↵</kbd> assemble · <kbd>⌃R</kbd> recall · <kbd>Esc</kbd> cancel</span>
   <button type="button" class="action primary" onclick="assemble()">Assemble &amp; Copy</button>
 </div>
 
@@ -434,6 +338,86 @@ async function formatFileBlock(f) {
   return `<file name="${f.name}" note="Unknown format — attach via paperclip if Claude.ai, or reference path if Claude Code." />`;
 }
 
+// ---- History (localStorage; persists across KM window opens) ----
+const HISTORY_KEY = 'pb_history_v1';
+const HISTORY_CAP = 25;
+const FIELD_IDS = ['role','background','task','rules','success','format'];
+let _recallIdx = -1;
+
+function loadHistory() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+
+function saveToHistory(entry) {
+  try {
+    const h = loadHistory();
+    if (!h.length || h[0].assembled !== entry.assembled) h.unshift(entry);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, HISTORY_CAP)));
+  } catch (e) { /* quota or blocked storage — ignore */ }
+  _recallIdx = -1;
+  populateHistorySelect();
+}
+
+function applyEntry(e) {
+  FIELD_IDS.forEach(id => { document.getElementById(id).value = e[id] || ''; });
+  if (typeof autosizeTextareas === 'function') autosizeTextareas();
+}
+
+function entryLabel(e, i) {
+  let t = '';
+  try {
+    t = new Date(e.ts).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  } catch (_) {}
+  const snip = (e.task || e.role || e.background || '').replace(/\s+/g,' ').trim().slice(0,48);
+  return (i + 1) + '. ' + t + (snip ? ' \u2014 ' + snip : '');
+}
+
+function populateHistorySelect() {
+  const sel = document.getElementById('historySelect');
+  const field = document.getElementById('historyField');
+  if (!sel || !field) return;
+  const h = loadHistory();
+  sel.innerHTML = '';
+  const def = document.createElement('option');
+  def.value = '';
+  def.textContent = h.length ? 'Recall a prompt\u2026' : 'No history yet';
+  sel.appendChild(def);
+  h.forEach((e, i) => {
+    const o = document.createElement('option');
+    o.value = String(i);
+    o.textContent = entryLabel(e, i);
+    sel.appendChild(o);
+  });
+  field.style.display = h.length ? '' : 'none';
+}
+
+function recallSelected() {
+  const sel = document.getElementById('historySelect');
+  const idx = parseInt(sel.value, 10);
+  if (isNaN(idx)) return;
+  const h = loadHistory();
+  if (!h[idx]) return;
+  _recallIdx = idx;
+  applyEntry(h[idx]);
+  const fileNote = (h[idx].files && h[idx].files.length) ? ' \u00b7 files were: ' + h[idx].files.join(', ') : '';
+  flashStatus('Recalled ' + (idx + 1) + '/' + h.length + fileNote);
+}
+
+// Quick recall: newest first, stepping further back on repeated calls.
+function recallLast() {
+  const h = loadHistory();
+  if (!h.length) { flashStatus('No history yet'); return; }
+  _recallIdx = (_recallIdx + 1) % h.length;
+  applyEntry(h[_recallIdx]);
+  const sel = document.getElementById('historySelect');
+  if (sel) sel.value = String(_recallIdx);
+  const fileNote = (h[_recallIdx].files && h[_recallIdx].files.length) ? ' \u00b7 files were: ' + h[_recallIdx].files.join(', ') : '';
+  flashStatus('Recalled ' + (_recallIdx + 1) + '/' + h.length + fileNote);
+}
+
 // Assemble the prompt
 async function assemble() {
   const role = document.getElementById('role').value.trim();
@@ -473,11 +457,20 @@ async function assemble() {
 
   const assembled = sections.join('\n\n');
 
-  const finish = (ok) => {
+  saveToHistory({
+    ts: new Date().toISOString(),
+    role, background, task, rules, success, format,
+    files: attachedFiles.map(f => f.name),
+    assembled
+  });
+
+  // Write directly to clipboard from JS — sidesteps KM's variable-sync timing.
+  // Mirror to PB_Assembled as a fallback in case clipboard write is blocked.
+  const finish = () => {
     if (window.KeyboardMaestro) {
       window.KeyboardMaestro.Submit('OK');
     } else {
-      flashStatus(ok ? 'Copied ✓' : 'Copy blocked by browser — try Safari');
+      alert('Copied to clipboard:\n\n' + assembled.slice(0, 500) + (assembled.length > 500 ? '\n\n[truncated in preview]' : ''));
     }
   };
 
@@ -488,7 +481,10 @@ async function assemble() {
     el.setAttribute('value', assembled);
   }
 
-  navigator.clipboard.writeText(assembled).then(() => finish(true)).catch(() => finish(false));
+  navigator.clipboard.writeText(assembled).then(finish).catch(() => {
+    // Clipboard API blocked; rely on KM variable path. Submit anyway.
+    finish();
+  });
 }
 
 function clearAll() {
@@ -499,6 +495,7 @@ function clearAll() {
   document.getElementById('success').value = '';
   document.getElementById('format').value = '';
   clearFiles();
+  _recallIdx = -1;
   // Visual feedback
   flashStatus('Cleared');
 }
@@ -522,6 +519,9 @@ document.addEventListener('keydown', (e) => {
   } else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
     assemble();
+  } else if (e.ctrlKey && !e.metaKey && (e.key === 'r' || e.key === 'R')) {
+    e.preventDefault();
+    recallLast();
   }
 });
 
@@ -534,36 +534,35 @@ function KMInit() {
 function KMWillShowWindow() {
   // Focus the task field by default — that's the most-edited field
   setTimeout(() => document.getElementById('role').focus(), 50);
+  populateHistorySelect();
+  relayout();
 }
 
-// Auto-grow each textarea so its full placeholder is visible without scrolling.
-// Runs on load and on viewport resize (handles iPhone rotation and desktop reflow).
+// Grow each textarea to fit its content, then size the window to fit everything
+// so there's no window scrollbar. CSS min-heights keep empty fields from collapsing.
 function autosizeTextareas() {
   document.querySelectorAll('textarea').forEach(t => {
-    const orig = t.value;
-    if (!orig) {
-      // Temporarily fill with placeholder so scrollHeight reflects it
-      t.value = t.placeholder || '';
-    }
     t.style.height = 'auto';
     t.style.height = (t.scrollHeight + 2) + 'px';
-    if (!orig) t.value = '';
   });
+  fitWindow();
 }
 
-let _resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(_resizeTimer);
-  _resizeTimer = setTimeout(autosizeTextareas, 120);
-});
+function fitWindow() {
+  try {
+    const target = Math.ceil(document.body.scrollHeight) + 6;
+    const avail = ((window.screen && window.screen.availHeight) || 1000) - 60;
+    window.resizeTo(window.outerWidth || 792, Math.min(target, avail));
+  } catch (e) { /* resize not permitted — fall back to data-kmwindow size */ }
+}
 
-// Browser load (no-op when running inside KM, which uses KMWillShowWindow above)
+function relayout() { autosizeTextareas(); }
+
+document.querySelectorAll('textarea').forEach(t => t.addEventListener('input', relayout));
+
 window.addEventListener('DOMContentLoaded', () => {
-  // Defer to next frame so layout/fonts settle before measuring
-  requestAnimationFrame(autosizeTextareas);
-  if (!window.KeyboardMaestro) {
-    setTimeout(() => document.getElementById('role').focus(), 50);
-  }
+  populateHistorySelect();
+  relayout();
 });
 </script>
 
