@@ -562,6 +562,17 @@ function relayout() { autosizeTextareas(); }
 
 document.querySelectorAll('textarea').forEach(t => t.addEventListener('input', relayout));
 
+// Re-fit the window whenever the body's size changes for any reason —
+// manual textarea drag-resize (no 'input' event), history field toggling, etc.
+if (typeof ResizeObserver !== 'undefined') {
+  let _rafFit = null;
+  const ro = new ResizeObserver(() => {
+    if (_rafFit) cancelAnimationFrame(_rafFit);
+    _rafFit = requestAnimationFrame(fitWindow);
+  });
+  ro.observe(document.body);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   populateHistorySelect();
   relayout();
