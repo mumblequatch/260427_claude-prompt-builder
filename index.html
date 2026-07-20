@@ -549,11 +549,13 @@ function autosizeTextareas() {
 }
 
 function fitWindow() {
+  // KM ignores window.resizeTo in custom prompts; it resizes the window to match
+  // the body's data-kmwindow attribute, which it polls. So mutate that instead.
   try {
-    const target = Math.ceil(document.body.scrollHeight) + 6;
     const avail = ((window.screen && window.screen.availHeight) || 1000) - 60;
-    window.resizeTo(window.outerWidth || 792, Math.min(target, avail));
-  } catch (e) { /* resize not permitted — fall back to data-kmwindow size */ }
+    const h = Math.min(Math.ceil(document.body.scrollHeight) + 6, avail);
+    document.body.setAttribute('data-kmwindow', '792,' + h);
+  } catch (e) {}
 }
 
 function relayout() { autosizeTextareas(); }
